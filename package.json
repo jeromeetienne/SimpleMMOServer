@@ -1,0 +1,17 @@
+{
+  "name": "tquery-multiplayerserver",
+  "scripts": {
+    "start": "app.js"
+  },
+  "subdomain": "jetienne.tquery-multiplayerserver",
+  "version": "0.0.0-2",
+  "engines": {
+    "node": "0.8.x"
+  },
+  "private": true,
+  "dependencies": {
+    "express": "3.0.0rc3",
+    "jade": "*",
+    "socket.io": "0.9.x"
+  }
+}
