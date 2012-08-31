@@ -3,33 +3,36 @@ var server	= require('http').createServer(app)
 var io		= require('socket.io').listen(server);
 
 var listenPort	= process.argv[2] || 80;
-console.log('listenPort', listenPort)
 server.listen(listenPort);
 
 app.get('/', function (req, res) {
  	res.sendfile(__dirname + '/index.html');
 });
 
-io.sockets.on('connection', function(socket){
-	socket.emit('news', { hello: 'world' });
-	socket.on('my other event', function (data) {
-		console.log(data);
-	});
 
-	// handle pings
+var userList	= {}
+io.sockets.on('connection', function(socket){
+
+	socket.emit('userlist', userList)
+
 	socket.on('ping', function(data){
 		socket.emit('pong', data);
 		console.log('received ping from ', this.id);
 	});
 	
-	var helloData;
 	socket.on('hello', function(data){
-		if( helloData )	return;
-		helloData	= data;
-		socket.broadcast.emit('hello', helloData);
+		if(userList[this.id])	return;
+		userList[this.id]	= data;
+		
+		var msg		= {};
+		msg[this.id]	= data;
+		socket.broadcast.emit('hello', msg);
 	});
 	
 	socket.on('disconnect', function(){
-		io.sockets.emit('disconnect', helloData);		
+		var msg		= {};
+		msg[this.id]	= userList[this.id];
+		io.sockets.emit('bye', msg);
+		delete userList[this.id]		
 	})
 });
