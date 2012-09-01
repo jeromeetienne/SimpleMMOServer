@@ -13,36 +13,36 @@ app.get('/', function (req, res) {
 var usersList	= {}
 io.sockets.on('connection', function(socket){
 
-	socket.emit('userlist', usersList)
-
-	socket.on('ping', function(data){
-		socket.emit('pong', data);
-		//console.log('received ping from ', this.id);
-	});
-
-	socket.on('nickRequest', function(data){
-		console.log('received nickRequest. wanna be', data)
-	});
-	
-	socket.on('hello', function(data){
-		if(usersList[this.id])	return;
-		usersList[this.id]	= data;
-		
-		var msg		= {};
-		msg[this.id]	= data;
-		socket.broadcast.emit('hello', msg);
-	});
-
-	socket.on('clientBroadcast', function(data){
-		data.sourceId	= this.id,
-		io.sockets.emit('clientBroadcast', data);
-	});
-	
 	socket.on('disconnect', function(){
-		var msg		= {};
-		msg[this.id]	= usersList[this.id];
-		io.sockets.emit('bye', msg);
+		socket.broadcast.emit('bye', {
+			sourceId	: this.id
+		});
 		// update usersList
 		delete usersList[this.id]		
 	})
+
+	socket.on('userInfo', function(data){
+		var firstInfo	= usersList[this.id] === undefined;
+
+		usersList[this.id]	= data;
+
+		if( firstInfo )	socket.emit('userlist', usersList)
+
+		io.sockets.emit('userInfo', {
+			sourceId	: this.id,
+			userInfo	: data
+		});
+	});
+
+
+	socket.on('ping', function(data){
+		socket.emit('pong', data);
+	});
+
+	socket.on('clientEcho', function(data){
+		io.sockets.emit('clientBroadcast', {
+			sourceId	: this.id,
+			message		: data
+		});
+	});
 });

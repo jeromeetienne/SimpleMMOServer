@@ -17,7 +17,9 @@ multiplayer server for tquery experiments
 
 ### About proto
 
-*User*
+
+
+### User
 * each connection got a user
 * a user got a humanName (given by client)
   * unique, server side ?
@@ -25,7 +27,7 @@ multiplayer server for tquery experiments
 * a user got a profile opaque blob (given by the client)
 * a userlist of those information is maintained by the server
 
-*Feature*
+### Feature
 * measure latency with ping
 * ability for client to broadcast message
 * a message rate limiter as anti-DoS measure
