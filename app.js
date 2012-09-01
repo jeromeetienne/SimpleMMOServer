@@ -10,10 +10,10 @@ app.get('/', function (req, res) {
 });
 
 
-var userList	= {}
+var usersList	= {}
 io.sockets.on('connection', function(socket){
 
-	socket.emit('userlist', userList)
+	socket.emit('userlist', usersList)
 
 	socket.on('ping', function(data){
 		socket.emit('pong', data);
@@ -21,18 +21,24 @@ io.sockets.on('connection', function(socket){
 	});
 	
 	socket.on('hello', function(data){
-		if(userList[this.id])	return;
-		userList[this.id]	= data;
+		if(usersList[this.id])	return;
+		usersList[this.id]	= data;
 		
 		var msg		= {};
 		msg[this.id]	= data;
 		socket.broadcast.emit('hello', msg);
 	});
+
+	socket.on('clientBroadcast', function(data){
+		data.sourceId	= this.id,
+		io.sockets.emit('clientBroadcast', data);
+	});
 	
 	socket.on('disconnect', function(){
 		var msg		= {};
-		msg[this.id]	= userList[this.id];
+		msg[this.id]	= usersList[this.id];
 		io.sockets.emit('bye', msg);
-		delete userList[this.id]		
+		// update usersList
+		delete usersList[this.id]		
 	})
 });
