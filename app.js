@@ -17,7 +17,11 @@ io.sockets.on('connection', function(socket){
 
 	socket.on('ping', function(data){
 		socket.emit('pong', data);
-		console.log('received ping from ', this.id);
+		//console.log('received ping from ', this.id);
+	});
+
+	socket.on('nickRequest', function(data){
+		console.log('received nickRequest. wanna be', data)
 	});
 	
 	socket.on('hello', function(data){
