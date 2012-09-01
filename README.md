@@ -12,6 +12,9 @@ multiplayer server for tquery experiments
 * so no security on server ?
   * nevertheless client can implement security on the client side 
 
+### About API
+* easy to include in a game
+
 ### About proto
 
 *User*
