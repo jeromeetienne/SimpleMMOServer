@@ -4,7 +4,7 @@
  -->
 <script src="/socket.io/socket.io.js"></script>
 <body> 
-	<div class='output'>
+	<div>
 		<form action="javascript:void(0)" id='nicknameForm'>
 			<b>Nickname:</b> <input type="text"/>
 		</form>
@@ -13,7 +13,7 @@
 			<input size=100 type="text"/> <b>Message</b> 
 		</form>
 	</div>
-	<div class='userlist'>
+	<div>
 		<h3>Users List</h3>
 		<pre id='usersList'></pre>
 	</div>
@@ -34,7 +34,6 @@
 		var formElement		= document.getElementById('nicknameForm');
 		userInfo.humanName	= formElement[0].value;
 		socket.emit('userInfo', userInfo);
-		
 		document.getElementById('chatInputForm')[0].focus();
 	});
 
