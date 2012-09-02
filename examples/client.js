@@ -15,24 +15,30 @@ var SimpleMMOServer	= function(humanName){
 	// emit initial userInfo
 	socket.emit('userInfo', userInfo);
 	// listen on user info
-	// - TODO rename that 'userJoin'
 	socket.on('userInfo', function(data){
 		console.log('received userInfo', JSON.stringify(data, null, '\t'))
+		// test if it is a new user
+		var newUser	= usersInfo[data.sourceId] === undefined ? true : false;
+		// update usersInfo
 		usersInfo[data.sourceId]	= data.userInfo;
-	});
+		// notify event
+		if( newUser )	this.dispatchEvent('userJoin', data);
+	}.bind(this));
 	// listen on bye
 	// - TODO rename that 'userLeft'
 	socket.on('bye', function(data){
 		console.log('received bye ', JSON.stringify(data, null, '\t'));
-		var userId	= data.sourceId;
-		delete usersInfo[userId]
-	});
+
+		this.dispatchEvent('userLeft', usersInfo[data.sourceId]);
+
+		delete usersInfo[data.sourceId]
+	}.bind(this));
 	// listen on 'userList'
 	socket.on('userlist', function(data){
 		console.log('received userList ', JSON.stringify(data, null, '\t'), this);
 		usersInfo	= data;
 		this.dispatchEvent('usersInfoChange', usersInfo);
-	});
+	}.bind(this));
 
 	//////////////////////////////////////////////////////////////////////////
 	//		Ping							//
@@ -70,6 +76,9 @@ SimpleMMOServer.prototype.latency	= function(){
 	return this._latency;
 }
 
+SimpleMMOServer.prototype.usersInfo	= function(){
+	return this._usersInfo;
+}
 //////////////////////////////////////////////////////////////////////////////////
 //		SimpleMMOServer microevent					//
 //////////////////////////////////////////////////////////////////////////////////

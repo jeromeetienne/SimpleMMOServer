@@ -11,7 +11,10 @@ console.log(gameServer)
 	gameServer.addEventListener('clientEcho', function(data){
 		console.log('received clientEcho', data);
 	})
-	gameServer.clientEcho({
-		data	: 'ddd'
+	gameServer.addEventListener('userJoin', function(){
+		console.warn('new user')
+	})
+	gameServer.addEventListener('userLeft', function(){
+		console.warn('left user')
 	})
 </script></body>
