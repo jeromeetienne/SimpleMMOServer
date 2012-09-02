@@ -1,17 +1,22 @@
+<!doctype html>
+
 <!-- <script src="http://jetienne.tquery-multiplayerserver.jit.su/socket.io/socket.io.js"></script>
  -->
- 
 <script src="/socket.io/socket.io.js"></script>
-<textarea cols="30" rows="5" id='chatOutput' style='overflow-y: scroll;'></textarea>
-<form action="javascript:void(0)" id='chatInputForm'>
-	Message: <input type="text"/>
-</form>
-
-<form action="javascript:void(0)" id='nicknameForm'>
-	nickname: <input type="text"/>
-</form>
-<h3>Users List</h3>
-<pre id='usersList'></pre>
+<body> 
+	<div class='output'>
+		<form action="javascript:void(0)" id='nicknameForm'>
+			<b>Nickname:</b> <input type="text"/>
+		</form>
+		<textarea cols="100%" rows="5" id='chatOutput' style='overflow-y: scroll;'></textarea>
+		<form action="javascript:void(0)" id='chatInputForm'>
+			<input size=100 type="text"/> <b>Message</b> 
+		</form>
+	</div>
+	<div class='userlist'>
+		<h3>Users List</h3>
+		<pre id='usersList'></pre>
+	</div>
 <script>
 	var socket	= io.connect();
 	//var socket = io.connect('http://jetienne.tquery-multiplayerserver.jit.su:80/');
@@ -86,13 +91,21 @@
 		formElement[0].value	= null;
 	});
 	socket.on('clientEcho', function(data){
+		// keep only clientEcho.say
 		if( data.message.type !== 'say' )	return;
 		console.log('received clientEcho Say', JSON.stringify(data, null, '\t'))
 		
-		var originInfo	= usersList[data.sourceId];
-		var chatOutput	=  document.getElementById('chatOutput');
 		var text	=  data.message.data.text;
-		chatOutput.value+= originInfo.humanName +':' + text+'\n';
+		// add humanName
+		var originInfo	= usersList[data.sourceId];
+		text		= originInfo.humanName +': ' + text;
+		// add time
+		var hours	= new Date().getHours();
+		var minutes	= new Date().getMinutes();
+		text		= "("+(hours<10?'0'+hours:hours)+":"+(minutes<10?'0'+minutes:minutes)+") " + text;
+		// update UI
+		var chatOutput	=  document.getElementById('chatOutput');
+		chatOutput.value+= text+'\n';
 		// force the element to scroll
 		chatOutput.scrollTop = chatOutput.scrollHeight;
 	});
@@ -101,3 +114,6 @@
 
 
 <a href="https://github.com/jeromeetienne/tquery-multiplayerserver"><img style="position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_red_aa0000.png" alt="Fork me on GitHub"></a>
+
+
+</body>

@@ -2,8 +2,8 @@ var app		= require('express')()
 
 var server	= require('http').createServer(app)
 server.listen(process.argv[2] || 80);
-app.get('/', function (req, res) {
- 	res.sendfile(__dirname + '/index.html');
+app.get('/examples/chat.html', function (req, res) {
+ 	res.sendfile(__dirname + '/examples/chat.html');
 });
 
 var usersList	= {}
