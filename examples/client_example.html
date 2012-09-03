@@ -4,7 +4,19 @@
 <script src="/socket.io/socket.io.js"></script>
 
 <script src="client.js"></script>
-<body><script>
+<body><div>
+	<form action="javascript:void(0)" id='nicknameForm'>
+		<b>Nickname:</b> <input type="text"/>
+	</form>
+	<textarea cols="100%" rows="5" id='chatOutput' style='overflow-y: scroll;'></textarea>
+	<form action="javascript:void(0)" id='chatInputForm'>
+		<input size=100 type="text"/> <b>Message</b> 
+	</form>
+</div>
+<div>
+	<h3>Users List</h3>
+	<pre id='usersList'></pre>
+</div><script>
 	var gameServer	= new SimpleMMOServer()
 console.log(gameServer)	
 
@@ -16,5 +28,8 @@ console.log(gameServer)
 	})
 	gameServer.addEventListener('userLeft', function(){
 		console.warn('left user')
+	})
+	gameServer.addEventListener('usersInfoChange', function(){
+		console.log(gameServer.usersInfo())
 	})
 </script></body>

@@ -9,11 +9,11 @@ var SimpleMMOServer	= function(humanName){
 	var userInfo	= {
 		humanName	: humanName
 	};
+	// emit initial userInfo
+	socket.emit('userInfo', userInfo);
 
 	var usersInfo	= {};
 	this._usersInfo	= usersInfo;
-	// emit initial userInfo
-	socket.emit('userInfo', userInfo);
 	// listen on user info
 	socket.on('userInfo', function(data){
 		console.log('received userInfo', JSON.stringify(data, null, '\t'))
@@ -54,7 +54,8 @@ var SimpleMMOServer	= function(humanName){
 		var smoother	= 0.3;
 		this._latency	= this._latency === null ? rtt : this._latency;
 		this._latency	= (1-smoother)*this._latency  + smoother * rtt;
-		console.log('received pong. rtt ', rtt, 'ms.', 'Smoothed Latency:', this._latency);
+		//console.log('received pong. rtt ', rtt, 'ms.', 'Smoothed Latency:', this._latency);
+		this.dispatchEvent('pong', data)
 	}.bind(this));
 
 
