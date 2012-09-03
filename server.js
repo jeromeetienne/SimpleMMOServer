@@ -5,7 +5,7 @@ server.listen(process.argv[2] || 80);
 
 app.get('/'				, function (req, res) { res.sendfile(__dirname + '/index.html'); });
 app.get('/examples/manual_chat.html'	, function (req, res) { res.sendfile(__dirname + '/examples/manual_chat.html'); });
-app.get('/examples/client_example.html'	, function (req, res) { res.sendfile(__dirname + '/examples/client_example.html'); });
+app.get('/examples/client_chat.html'	, function (req, res) { res.sendfile(__dirname + '/examples/client_chat.html'); });
 app.get('/examples/client.js'		, function (req, res) { res.sendfile(__dirname + '/examples/client.js'); });
 
 var usersList	= {}
