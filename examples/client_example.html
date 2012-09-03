@@ -19,7 +19,6 @@
 	<pre id='usersList'></pre>
 </div><script>
 	var gameServer	= new SimpleMMOServer()
-console.log(gameServer)	
 
 	document.getElementById('nicknameForm')[0].value	= gameServer.userInfo().humanName;
 	document.getElementById('nicknameForm').addEventListener('submit', function(){
@@ -44,9 +43,11 @@ console.log(gameServer)
 		updateChatOutput('"'+humanName+'" just joined.')
 	})
 
-	gameServer.addEventListener('userLeft', function(){
-		console.log('left user')
-		
+	gameServer.addEventListener('userLeft', function(data){
+		console.log('left user', data.userInfo.humanName)
+		// notify the user
+		var humanName	= data.userInfo.humanName;
+		updateChatOutput('"'+humanName+'" just left.')
 		// update usersList
 		var usersListEl	= document.getElementById('usersList')
 		usersListEl.innerHTML	= JSON.stringify(gameServer.usersInfo(), null, '\t')
@@ -99,8 +100,8 @@ console.log(gameServer)
 		updateChatOutput(text)
 	});
 
-
-	function updateChatOutput(text){		// add time
+	function updateChatOutput(text){
+		// add time
 		var hours	= new Date().getHours();
 		var minutes	= new Date().getMinutes();
 		text		= "("+(hours<10?'0'+hours:hours)+":"+(minutes<10?'0'+minutes:minutes)+") " + text;

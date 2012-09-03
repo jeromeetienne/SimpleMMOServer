@@ -33,7 +33,10 @@ var SimpleMMOServer	= function(userInfo){
 
 		var userInfo	= this._usersInfo[data.sourceId];
 		delete this._usersInfo[data.sourceId]
-		this.dispatchEvent('userLeft', userInfo);
+		this.dispatchEvent('userLeft', {
+			sourceId	: data.sourceId,
+			userInfo	: userInfo
+		});
 	}.bind(this));
 	// listen on 'userList'
 	socket.on('userlist', function(data){
