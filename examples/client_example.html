@@ -7,6 +7,7 @@
 <body><div>
 	<form action="javascript:void(0)" id='nicknameForm'>
 		<b>Nickname:</b> <input type="text"/>
+		Latency: <span style='font-weight: bolder' id='latencyEl'>n/a</span>
 	</form>
 	<textarea cols="100%" rows="5" id='chatOutput' style='overflow-y: scroll;'></textarea>
 	<form action="javascript:void(0)" id='chatInputForm'>
@@ -20,16 +21,97 @@
 	var gameServer	= new SimpleMMOServer()
 console.log(gameServer)	
 
+	document.getElementById('nicknameForm')[0].value	= gameServer.userInfo().humanName;
+	document.getElementById('nicknameForm').addEventListener('submit', function(){
+		var formElement		= document.getElementById('nicknameForm');
+		var userInfo		= gameServer.userInfo();
+		userInfo.humanName	= formElement[0].value;
+		gameServer.userInfo(userInfo);
+		document.getElementById('chatInputForm')[0].focus();
+	});
+
+	gameServer.addEventListener('pong', function(){
+		document.getElementById('latencyEl').innerHTML	= gameServer.latency()+'ms';
+	})
+
 	gameServer.addEventListener('clientEcho', function(data){
 		console.log('received clientEcho', data);
 	})
-	gameServer.addEventListener('userJoin', function(){
-		console.warn('new user')
+
+	gameServer.addEventListener('userJoin', function(data){
+		console.log('userJoin', data)
+		var humanName	= data.userInfo.humanName;
+		updateChatOutput('"'+humanName+'" just joined.')
 	})
+
 	gameServer.addEventListener('userLeft', function(){
-		console.warn('left user')
+		console.log('left user')
+		
+		// update usersList
+		var usersListEl	= document.getElementById('usersList')
+		usersListEl.innerHTML	= JSON.stringify(gameServer.usersInfo(), null, '\t')
 	})
+
+	gameServer.addEventListener('userInfoChange', function(sourceId, newUserInfo, oldUserInfo){
+		console.log('userInfoChange', arguments)
+		if( oldUserInfo && oldUserInfo.humanName !== newUserInfo.humanName ){
+			console.log('humanNameChange')
+			updateChatOutput('"'+oldUserInfo.humanName+'" is now called "'+newUserInfo.humanName+'"')
+		}
+		// update usersList
+		var usersListEl	= document.getElementById('usersList')
+		usersListEl.innerHTML	= JSON.stringify(gameServer.usersInfo(), null, '\t')
+	})
+
 	gameServer.addEventListener('usersInfoChange', function(){
-		console.log(gameServer.usersInfo())
+		// update usersList
+		var usersListEl	= document.getElementById('usersList')
+		usersListEl.innerHTML	= JSON.stringify(gameServer.usersInfo(), null, '\t')
 	})
+	
+	//////////////////////////////////////////////////////////////////////////
+	//		Chat							//
+	//////////////////////////////////////////////////////////////////////////
+
+	document.getElementById('chatInputForm')[0].focus();
+	// listen to chat text input	
+	document.getElementById('chatInputForm').addEventListener('submit', function(){
+		var formElement	= document.getElementById('chatInputForm');
+		gameServer.clientEcho({
+			type	: 'say',
+			data	: {
+				text	: formElement[0].value
+			}
+		});
+		formElement[0].value	= null;
+	});
+	gameServer.addEventListener('clientEcho', function(data){
+		// keep only clientEcho.say
+		if( data.message.type !== 'say' )	return;
+		console.log('received clientEcho Say', JSON.stringify(data, null, '\t'))
+		
+		var text	=  data.message.data.text;
+		// add humanName
+		var usersInfo	= gameServer.usersInfo();
+console.log('usersInfo', usersInfo)
+		var originInfo	= usersInfo[data.sourceId];
+console.log('originInfo', originInfo)
+		text		= originInfo.humanName +': ' + text;
+		
+		// update chatOutput
+		updateChatOutput(text)
+	});
+
+
+	function updateChatOutput(text){		// add time
+		var hours	= new Date().getHours();
+		var minutes	= new Date().getMinutes();
+		text		= "("+(hours<10?'0'+hours:hours)+":"+(minutes<10?'0'+minutes:minutes)+") " + text;
+		// update UI
+		var chatOutput	=  document.getElementById('chatOutput');
+		chatOutput.value+= text+'\n';
+		// force the element to scroll
+		chatOutput.scrollTop = chatOutput.scrollHeight;
+
+	}
 </script></body>
