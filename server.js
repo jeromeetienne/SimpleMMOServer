@@ -1,8 +1,12 @@
 var app		= require('express')()
 
-var server	= require('http').createServer(app)
-server.listen(process.argv[2] || 80);
+var listenPort	= process.argv[2] || 80;
+console.log('listen on', '0.0.0.0:'+listenPort)
 
+var server	= require('http').createServer(app)
+server.listen(listenPort);
+
+// TODO i bet there is a cleaner way to do that with express
 app.get('/'				, function (req, res) { res.sendfile(__dirname + '/index.html'); });
 app.get('/examples/manual_chat.html'	, function (req, res) { res.sendfile(__dirname + '/examples/manual_chat.html'); });
 app.get('/examples/client_chat.html'	, function (req, res) { res.sendfile(__dirname + '/examples/client_chat.html'); });
@@ -10,6 +14,7 @@ app.get('/examples/client.js'		, function (req, res) { res.sendfile(__dirname + 
 
 var usersInfo	= {}
 var io		= require('socket.io').listen(server);
+io.set('log level', 2);
 io.sockets.on('connection', function(socket){
 	socket.on('connectRequest', function(data){
 		console.assert(usersInfo[this.id] === undefined);	

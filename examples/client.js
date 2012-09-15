@@ -17,7 +17,7 @@ var SimpleMMOServer	= function(userInfo, serverUrl){
 		console.assert(this._sourceId === null)
 		this._sourceId	= data.sourceId;
 		this._usersInfo	= data.usersInfo;
-		this.dispatchEvent('connected', this._sourceId);		
+		this.dispatchEvent('connected', this._sourceId, this._usersInfo);		
 	}.bind(this));
 
 	// listen on user info
