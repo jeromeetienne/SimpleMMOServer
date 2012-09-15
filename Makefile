@@ -1,7 +1,7 @@
-server:
+serverDev:
 	forever -w --watchDirectory . server.js 8000
 
-serverSimple:
+server:
 	node server.js 8000
 	
 deploy:
