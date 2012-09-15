@@ -8,14 +8,26 @@ app.get('/examples/manual_chat.html'	, function (req, res) { res.sendfile(__dirn
 app.get('/examples/client_chat.html'	, function (req, res) { res.sendfile(__dirname + '/examples/client_chat.html'); });
 app.get('/examples/client.js'		, function (req, res) { res.sendfile(__dirname + '/examples/client.js'); });
 
-var usersList	= {}
+var usersInfo	= {}
 var io		= require('socket.io').listen(server);
 io.sockets.on('connection', function(socket){
+	socket.on('connectRequest', function(data){
+		console.assert(usersInfo[this.id] === undefined);	
+		usersInfo[this.id]	= data;
+		// reply
+		socket.emit('connectReply', {
+			sourceId	: this.id,
+			usersInfo	: usersInfo
+		});
+		// notify other clients
+		socket.broadcast.emit('userInfo', {
+			sourceId	: this.id,
+			userInfo	: data
+		});
+	});
 	// handle userInfo
 	socket.on('userInfo', function(data){
-		var firstInfo	= usersList[this.id] === undefined;
-		usersList[this.id]	= data;
-		if( firstInfo )	socket.emit('userlist', usersList)
+		usersInfo[this.id]	= data;
 		io.sockets.emit('userInfo', {
 			sourceId	: this.id,
 			userInfo	: data
@@ -26,7 +38,7 @@ io.sockets.on('connection', function(socket){
 		socket.broadcast.emit('bye', {
 			sourceId	: this.id
 		});
-		delete usersList[this.id]		
+		delete usersInfo[this.id]		
 	})
 	// handle ping
 	socket.on('ping', function(data){
@@ -35,6 +47,13 @@ io.sockets.on('connection', function(socket){
 	// handle clientEcho
 	socket.on('clientEcho', function(data){
 		io.sockets.emit('clientEcho', {
+			sourceId	: this.id,
+			message		: data
+		});
+	});
+	// handle clientEcho
+	socket.on('clientBroadcast', function(data){
+		socket.broadcast.emit('clientBroadcast', {
 			sourceId	: this.id,
 			message		: data
 		});

@@ -1,17 +1,25 @@
-var SimpleMMOServer	= function(userInfo){
-	var socket	= io.connect();
+var SimpleMMOServer	= function(userInfo, serverUrl){
+	var serverUrl	= serverUrl || ''
+	var socket	= io.connect(serverUrl);
 	//var socket = io.connect('http://jetienne.tquery-multiplayerserver.jit.su:80/');
 	this._socket	= socket;
+
 	//////////////////////////////////////////////////////////////////////////
 	//		userInfo						//
 	//////////////////////////////////////////////////////////////////////////
-	this._userInfo	= userInfo || {
-		humanName	: "user"+Math.floor(Math.random()*100000)
-	};
-	// emit initial userInfo
-	socket.emit('userInfo', this._userInfo);
-
+	this._userInfo	= userInfo || {};
+	this._sourceId	= null;
 	this._usersInfo	= {};
+
+	// emit initial userI
+	socket.emit('connectRequest', this._userInfo);
+	socket.on('connectReply', function(data){
+		console.assert(this._sourceId === null)
+		this._sourceId	= data.sourceId;
+		this._usersInfo	= data.usersInfo;
+		this.dispatchEvent('connected', this._sourceId);		
+	}.bind(this));
+
 	// listen on user info
 	socket.on('userInfo', function(data){
 		console.log('received userInfo', JSON.stringify(data, null, '\t'))
@@ -24,7 +32,7 @@ var SimpleMMOServer	= function(userInfo){
 		// notify event
 		if( newUser )	this.dispatchEvent('userJoin', data);
 		
-		this.dispatchEvent('userInfoChange', data.sourceId, data.userInfo, oldUserInfo);
+		this.dispatchEvent('userInfo', data.sourceId, data.userInfo, oldUserInfo);
 	}.bind(this));
 	// listen on bye
 	// - TODO rename that 'userLeft'
@@ -38,12 +46,6 @@ var SimpleMMOServer	= function(userInfo){
 			userInfo	: userInfo
 		});
 	}.bind(this));
-	// listen on 'userList'
-	socket.on('userlist', function(data){
-		console.log('received userList ', JSON.stringify(data, null, '\t'), this);
-		this._usersInfo	= data;
-		this.dispatchEvent('usersInfoChange', this._usersInfo);
-	}.bind(this));
 
 	//////////////////////////////////////////////////////////////////////////
 	//		Ping							//
@@ -53,7 +55,7 @@ var SimpleMMOServer	= function(userInfo){
 	this._latency	= undefined;
 	setInterval(function(){
 		socket.emit('ping', { time	: Date.now() });
-	}, 1000)
+	}, 10000)
 	socket.on('pong', function(data){
 		var rtt		= Date.now() - data.time;
 		var smoother	= 0.3;
@@ -65,17 +67,24 @@ var SimpleMMOServer	= function(userInfo){
 
 
 	//////////////////////////////////////////////////////////////////////////
-	//		Chat							//
+	//		client2client messaging					//
 	//////////////////////////////////////////////////////////////////////////
 
 	socket.on('clientEcho', function(data){
 		this.dispatchEvent('clientEcho', data)
+	}.bind(this));
+	socket.on('clientBroadcast', function(data){
+		this.dispatchEvent('clientBroadcast', data)
 	}.bind(this));
 }
 
 
 SimpleMMOServer.prototype.clientEcho	= function(data){
 	this._socket.emit('clientEcho', data)
+}
+
+SimpleMMOServer.prototype.clientBroadcast	= function(data){
+	this._socket.emit('clientBroadcast', data)
 }
 
 SimpleMMOServer.prototype.latency	= function(){
@@ -91,7 +100,6 @@ SimpleMMOServer.prototype.userInfo	= function(value){
 	this._userInfo	= value;
 	// emit  userInfo
 	this._socket.emit('userInfo', this._userInfo);
-	console.log('userInfo', this._userInfo)
 	return this;
 }
 //////////////////////////////////////////////////////////////////////////////////

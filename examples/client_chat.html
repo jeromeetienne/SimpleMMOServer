@@ -18,7 +18,9 @@
 	<h3>Users List</h3>
 	<pre id='usersList'></pre>
 </div><script>
-	var gameServer	= new SimpleMMOServer()
+	var gameServer	= new SimpleMMOServer({
+		humanName	: "chater-"+Math.floor(Math.random()*100000)
+	})
 
 	document.getElementById('nicknameForm')[0].value	= gameServer.userInfo().humanName;
 	document.getElementById('nicknameForm').addEventListener('submit', function(){
@@ -35,6 +37,9 @@
 
 	gameServer.addEventListener('clientEcho', function(data){
 		console.log('received clientEcho', data);
+	})
+	gameServer.addEventListener('clientBroadcast', function(data){
+		console.log('received clientBroadcast', data);
 	})
 
 	gameServer.addEventListener('userJoin', function(data){
@@ -53,8 +58,8 @@
 		usersListEl.innerHTML	= JSON.stringify(gameServer.usersInfo(), null, '\t')
 	})
 
-	gameServer.addEventListener('userInfoChange', function(sourceId, newUserInfo, oldUserInfo){
-		console.log('userInfoChange', arguments)
+	gameServer.addEventListener('userInfo', function(sourceId, newUserInfo, oldUserInfo){
+		console.log('userInfo', arguments)
 		if( oldUserInfo && oldUserInfo.humanName !== newUserInfo.humanName ){
 			console.log('humanNameChange')
 			updateChatOutput('"'+oldUserInfo.humanName+'" is now called "'+newUserInfo.humanName+'"')
@@ -64,7 +69,8 @@
 		usersListEl.innerHTML	= JSON.stringify(gameServer.usersInfo(), null, '\t')
 	})
 
-	gameServer.addEventListener('usersInfoChange', function(){
+	gameServer.addEventListener('connected', function(){
+		console.log('connected')
 		// update usersList
 		var usersListEl	= document.getElementById('usersList')
 		usersListEl.innerHTML	= JSON.stringify(gameServer.usersInfo(), null, '\t')
