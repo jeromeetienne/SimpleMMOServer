@@ -35,7 +35,7 @@ io.sockets.on('connection', function(socket){
 	});
 	// handle disconnection
 	socket.on('disconnect', function(){
-		socket.broadcast.emit('bye', {
+		socket.broadcast.emit('userLeft', {
 			sourceId	: this.id
 		});
 		delete usersInfo[this.id]		

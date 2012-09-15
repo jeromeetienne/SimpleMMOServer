@@ -43,13 +43,13 @@
 	})
 
 	gameServer.addEventListener('userJoin', function(data){
-		console.log('userJoin', data)
+		//console.log('userJoin', data)
 		var humanName	= data.userInfo.humanName;
 		updateChatOutput('"'+humanName+'" just joined.')
 	})
 
 	gameServer.addEventListener('userLeft', function(data){
-		console.log('left user', data.userInfo.humanName)
+		//console.log('left user', data.userInfo.humanName)
 		// notify the user
 		var humanName	= data.userInfo.humanName;
 		updateChatOutput('"'+humanName+'" just left.')
@@ -59,9 +59,9 @@
 	})
 
 	gameServer.addEventListener('userInfo', function(sourceId, newUserInfo, oldUserInfo){
-		console.log('userInfo', arguments)
+		//console.log('userInfo', arguments)
 		if( oldUserInfo && oldUserInfo.humanName !== newUserInfo.humanName ){
-			console.log('humanNameChange')
+			//console.log('humanNameChange')
 			updateChatOutput('"'+oldUserInfo.humanName+'" is now called "'+newUserInfo.humanName+'"')
 		}
 		// update usersList
@@ -70,7 +70,7 @@
 	})
 
 	gameServer.addEventListener('connected', function(){
-		console.log('connected')
+		//console.log('connected')
 		// update usersList
 		var usersListEl	= document.getElementById('usersList')
 		usersListEl.innerHTML	= JSON.stringify(gameServer.usersInfo(), null, '\t')

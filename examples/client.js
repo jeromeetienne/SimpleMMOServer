@@ -22,7 +22,7 @@ var SimpleMMOServer	= function(userInfo, serverUrl){
 
 	// listen on user info
 	socket.on('userInfo', function(data){
-		console.log('received userInfo', JSON.stringify(data, null, '\t'))
+		//console.log('received userInfo', JSON.stringify(data, null, '\t'))
 		// 
 		var oldUserInfo	= this._usersInfo[data.sourceId]
 		// test if it is a new user
@@ -34,10 +34,9 @@ var SimpleMMOServer	= function(userInfo, serverUrl){
 		
 		this.dispatchEvent('userInfo', data.sourceId, data.userInfo, oldUserInfo);
 	}.bind(this));
-	// listen on bye
-	// - TODO rename that 'userLeft'
-	socket.on('bye', function(data){
-		console.log('received bye ', JSON.stringify(data, null, '\t'));
+	// listen on userLeft
+	socket.on('userLeft', function(data){
+		console.log('received userLeft ', JSON.stringify(data, null, '\t'));
 
 		var userInfo	= this._usersInfo[data.sourceId];
 		delete this._usersInfo[data.sourceId]
@@ -55,7 +54,7 @@ var SimpleMMOServer	= function(userInfo, serverUrl){
 	this._latency	= undefined;
 	setInterval(function(){
 		socket.emit('ping', { time	: Date.now() });
-	}, 10000)
+	}, 1000)
 	socket.on('pong', function(data){
 		var rtt		= Date.now() - data.time;
 		var smoother	= 0.3;
