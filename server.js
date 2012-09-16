@@ -16,19 +16,10 @@ var usersInfo	= {}
 var io		= require('socket.io').listen(server);
 io.set('log level', 2);
 io.sockets.on('connection', function(socket){
-	socket.on('connectRequest', function(data){
-		console.assert(usersInfo[this.id] === undefined);	
-		usersInfo[this.id]	= data;
-		// reply
-		socket.emit('connectReply', {
-			sourceId	: this.id,
-			usersInfo	: usersInfo
-		});
-		// notify other clients
-		socket.broadcast.emit('userInfo', {
-			sourceId	: this.id,
-			userInfo	: data
-		});
+	
+	socket.emit('connected', {
+		sourceId	: socket.id,
+		usersInfo	: usersInfo
 	});
 	// handle userInfo
 	socket.on('userInfo', function(data){

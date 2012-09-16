@@ -12,8 +12,10 @@ var SimpleMMOServer	= function(userInfo, serverUrl){
 	this._usersInfo	= {};
 
 	// emit initial userI
-	socket.emit('connectRequest', this._userInfo);
-	socket.on('connectReply', function(data){
+	this.userInfo(this._userInfo);
+
+	socket.on('connected', function(data){
+console.log('connected', data)
 		console.assert(this._sourceId === null)
 		this._sourceId	= data.sourceId;
 		this._usersInfo	= data.usersInfo;
@@ -30,7 +32,9 @@ var SimpleMMOServer	= function(userInfo, serverUrl){
 		// update usersInfo
 		this._usersInfo[data.sourceId]	= data.userInfo;
 		// notify event
-		if( newUser )	this.dispatchEvent('userJoin', data);
+		if( newUser && data.sourceId !== this._sourceId){
+			this.dispatchEvent('userJoin', data);			
+		}
 		
 		this.dispatchEvent('userInfo', data.sourceId, data.userInfo, oldUserInfo);
 	}.bind(this));

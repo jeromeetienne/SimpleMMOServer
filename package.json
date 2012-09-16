@@ -4,7 +4,7 @@
     "start": "server.js"
   },
   "subdomain": "jetienne.tquery-multiplayerserver",
-  "version": "0.0.0-33",
+  "version": "0.0.0-36",
   "engines": {
     "node": "0.8.x"
   },
