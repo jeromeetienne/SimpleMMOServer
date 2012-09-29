@@ -18,63 +18,66 @@
 	<h3>Users List</h3>
 	<pre id='usersList'></pre>
 </div><script>
-	var gameServer	= new SimpleMMOServer({
-		humanName	: "chater-"+Math.floor(Math.random()*100000)
-	})
+	var gameServer	= new SimpleMMOServer('aRoom', {
+		nickName	: "user-"+Math.floor(Math.random()*100000)
+	});
 
-	document.getElementById('nicknameForm')[0].value	= gameServer.userInfo().humanName;
+	// handle nicknameForm
+	document.getElementById('nicknameForm')[0].value	= gameServer.userInfo().nickName;
 	document.getElementById('nicknameForm').addEventListener('submit', function(){
 		var formElement		= document.getElementById('nicknameForm');
 		var userInfo		= gameServer.userInfo();
-		userInfo.humanName	= formElement[0].value;
+		userInfo.nickName	= formElement[0].value;
 		gameServer.userInfo(userInfo);
 		document.getElementById('chatInputForm')[0].focus();
 	});
 
+	// display latency
 	gameServer.addEventListener('pong', function(){
 		document.getElementById('latencyEl').innerHTML	= gameServer.latency()+'ms';
-	})
+	});
 
 	gameServer.addEventListener('clientEcho', function(data){
 		console.log('received clientEcho', data);
-	})
+	});
+
 	gameServer.addEventListener('clientBroadcast', function(data){
 		console.log('received clientBroadcast', data);
-	})
+	});
 
 	gameServer.addEventListener('userJoin', function(data){
 		//console.log('userJoin', data)
-		var humanName	= data.userInfo.humanName;
-		updateChatOutput('"'+humanName+'" just joined.')
-	})
+		var nickName	= data.userInfo.nickName;
+		updateChatOutput('"'+nickName+'" just joined.')
+	});
 
 	gameServer.addEventListener('userLeft', function(data){
-		//console.log('left user', data.userInfo.humanName)
+		//console.log('left user', data.userInfo.nickName)
 		// notify the user
-		var humanName	= data.userInfo.humanName;
-		updateChatOutput('"'+humanName+'" just left.')
+		var nickName	= data.userInfo.nickName;
+		updateChatOutput('"'+nickName+'" just left.')
 		// update usersList
 		var usersListEl	= document.getElementById('usersList')
 		usersListEl.innerHTML	= JSON.stringify(gameServer.usersInfo(), null, '\t')
-	})
+	});
 
 	gameServer.addEventListener('userInfo', function(sourceId, newUserInfo, oldUserInfo){
-		//console.log('userInfo', arguments)
-		if( oldUserInfo && oldUserInfo.humanName !== newUserInfo.humanName ){
-			//console.log('humanNameChange')
-			updateChatOutput('"'+oldUserInfo.humanName+'" is now called "'+newUserInfo.humanName+'"')
+		console.log('userInfo', arguments, gameServer.usersInfo())
+		if( oldUserInfo && oldUserInfo.nickName !== newUserInfo.nickName ){
+			//console.log('nickNameChange')
+			updateChatOutput('"'+oldUserInfo.nickName+'" is now called "'+newUserInfo.nickName+'"')
 		}
 		// update usersList
 		var usersListEl	= document.getElementById('usersList')
 		usersListEl.innerHTML	= JSON.stringify(gameServer.usersInfo(), null, '\t')
-	})
+	});
 
 	gameServer.addEventListener('connected', function(){
 		//console.log('connected')
 		// update usersList
 		var usersListEl	= document.getElementById('usersList')
 		usersListEl.innerHTML	= JSON.stringify(gameServer.usersInfo(), null, '\t')
-	})
+	});
 	
 	//////////////////////////////////////////////////////////////////////////
 	//		Chat							//
@@ -98,10 +101,12 @@
 		console.log('received clientEcho Say', JSON.stringify(data, null, '\t'))
 		// get said text
 		var text	=  data.message.data.text;
-		// add humanName
+		// add nickName
 		var usersInfo	= gameServer.usersInfo();
+console.log('usersInfo', usersInfo)
+console.log('sourceId', data.sourceId)
 		var originInfo	= usersInfo[data.sourceId];
-		text		= originInfo.humanName +': ' + text;
+		text		= originInfo.nickName +': ' + text;
 		// update chatOutput
 		updateChatOutput(text)
 	});
@@ -116,7 +121,7 @@
 		chatOutput.value+= text+'\n';
 		// force the element to scroll
 		chatOutput.scrollTop = chatOutput.scrollHeight;
-	}
+	};
 </script>
 <!-- github ribbon -->
 <a href="https://github.com/jeromeetienne/SimpleMMOServer"><img style="position: absolute; top: 0; right: 0; border: 0; z-index:9999" src="https://s3.amazonaws.com/github/ribbons/forkme_right_red_aa0000.png" alt="Fork me on GitHub"></a>

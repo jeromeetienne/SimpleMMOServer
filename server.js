@@ -1,56 +1,102 @@
 var app		= require('express')()
 
-var listenPort	= process.argv[2] || 80;
+var listenPort	= process.argv[2] || 4000;
 console.log('listen on', '0.0.0.0:'+listenPort)
 
 var server	= require('http').createServer(app)
 server.listen(listenPort);
 
-// TODO i bet there is a cleaner way to do that with express
-app.get('/'				, function (req, res) { res.sendfile(__dirname + '/index.html'); });
-app.get('/examples/manual_chat.html'	, function (req, res) { res.sendfile(__dirname + '/examples/manual_chat.html'); });
-app.get('/examples/client_chat.html'	, function (req, res) { res.sendfile(__dirname + '/examples/client_chat.html'); });
-app.get('/examples/client.js'		, function (req, res) { res.sendfile(__dirname + '/examples/client.js'); });
+// export static files
+app.use(require('express').static(__dirname + '/'));
 
-var usersInfo	= {}
+
+/**
+ * Note on transition
+ * - rooms = { 'roomName' : { roomName: name, usersList : userslist }
+ * - userslist == { socket: , userInfo}
+*/
+
 var io		= require('socket.io').listen(server);
 io.set('log level', 2);
 io.sockets.on('connection', function(socket){
-	
-	socket.emit('connected', {
-		sourceId	: socket.id,
-		usersInfo	: usersInfo
+	var roomName	= null;
+	var userInfo	= null;
+	var sourceId	= socket.id;
+
+	socket.on('joinRoom', function(data){
+		console.log('********** JOIN', data)
+		// copy parameters
+		roomName	= data.roomName;
+		userInfo	= data.userInfo;
+		// store info in the socket
+		console.assert( socket._smmo === undefined );
+		socket._smmo	= {
+			roomName	: roomName,
+			userInfo	: userInfo
+		};
+		// join the room
+		socket.join(roomName);
+		// acknowledge the join to the sender
+		var usersInfo	= {};
+		io.sockets.clients(roomName).forEach(function(client){
+			usersInfo[client.id]	= client._smmo.userInfo;
+		});
+		socket.emit('roomJoined', {
+			sourceId	: sourceId,
+			usersInfo	: usersInfo
+		});
+		// tell everybody in the room you joined		
+		io.sockets.in(roomName).emit('userInfo', {
+			sourceId	: sourceId,
+			userInfo	: userInfo
+		});
 	});
+
+
 	// handle userInfo
 	socket.on('userInfo', function(data){
-		usersInfo[this.id]	= data;
-		io.sockets.emit('userInfo', {
-			sourceId	: this.id,
-			userInfo	: data
+		console.assert( socket._smmo !== undefined );
+		userInfo	= socket._smmo.userInfo = data;
+		io.sockets.in(roomName).emit('userInfo', {
+			sourceId	: sourceId,
+			userInfo	: userInfo
 		});
 	});
-	// handle disconnection
+
+	// // handle disconnection
 	socket.on('disconnect', function(){
-		socket.broadcast.emit('userLeft', {
-			sourceId	: this.id
+		console.log('client', sourceId, 'disconnect')
+		io.sockets.in(roomName).emit('userLeft', {
+			sourceId	: sourceId,
+			reason		: 'disconnect'
 		});
-		delete usersInfo[this.id]		
 	})
+	
+	//////////////////////////////////////////////////////////////////////////
+	//		ping/pong						//
+	//////////////////////////////////////////////////////////////////////////
+
 	// handle ping
 	socket.on('ping', function(data){
 		socket.emit('pong', data);
 	});
+
+
+	//////////////////////////////////////////////////////////////////////////
+	//		echo/broadcast						//
+	//////////////////////////////////////////////////////////////////////////
+
 	// handle clientEcho
 	socket.on('clientEcho', function(data){
-		io.sockets.emit('clientEcho', {
+		io.sockets.in(roomName).emit('clientEcho', {
 			sourceId	: this.id,
 			message		: data
 		});
 	});
 	// handle clientEcho
 	socket.on('clientBroadcast', function(data){
-		socket.broadcast.emit('clientBroadcast', {
-			sourceId	: this.id,
+		socket.broadcast.to(roomName).emit('clientBroadcast', {
+			sourceId	: sourceId,
 			message		: data
 		});
 	});

@@ -1,8 +1,8 @@
-serverDev:
-	forever -w --watchDirectory . server.js 8000
-
-server:
-	node server.js 8000
+serverProd:
+	node server.js 4000
 	
+server:
+	forever -w --watchDirectory . server.js 4000
+
 deploy:
 	yes | jitsu deploy

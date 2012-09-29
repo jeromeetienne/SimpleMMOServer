@@ -1,51 +1,39 @@
-var SimpleMMOServer	= function(roomName, userInfo, serverUrl){
-	this._roomName	= roomName || '';	
-	this._userInfo	= userInfo || {};
-	serverUrl	= serverUrl || ''
+var SimpleMMOServer	= function(userInfo, serverUrl){
+	var serverUrl	= serverUrl || ''
 	var socket	= io.connect(serverUrl);
 	this._socket	= socket;
 
 	//////////////////////////////////////////////////////////////////////////
 	//		userInfo						//
 	//////////////////////////////////////////////////////////////////////////
+	this._userInfo	= userInfo || {};
 	this._sourceId	= null;
 	this._usersInfo	= {};
-	
-	socket.emit('joinRoom', {
-		roomName	: this._roomName,
-		userInfo	: this._userInfo 
-	});
 
-	socket.on('roomJoined', function(data){
-		console.log('roomJoined', data)
+	// emit initial userI
+	this.userInfo(this._userInfo);
+
+	socket.on('connected', function(data){
+		//console.log('connected', data)
 		console.assert(this._sourceId === null)
 		this._sourceId	= data.sourceId;
 		this._usersInfo	= data.usersInfo;
-		this.dispatchEvent('roomJoined', this._sourceId, this._usersInfo);		
+		this.dispatchEvent('connected', this._sourceId, this._usersInfo);		
 	}.bind(this));
 	
-
-
-	socket.on('connect', function(data){
-		console.log('event connect')
-	});
-
-	
 	socket.on('disconnect', function(socket){
-		console.log('event disconnect')
+		console.assert(false, '***************')
 	}.bind(this))
 
 	// listen on user info
 	socket.on('userInfo', function(data){
-		console.log('received userInfo', JSON.stringify(data, null, '\t'))
+		//console.log('received userInfo', JSON.stringify(data, null, '\t'))
 		// 
 		var oldUserInfo	= this._usersInfo[data.sourceId]
 		// test if it is a new user
 		var newUser	= oldUserInfo === undefined ? true : false;
 		// update usersInfo
-console.log('pre usersInfo', this._usersInfo, data.sourceId)
 		this._usersInfo[data.sourceId]	= data.userInfo;
-console.log('post usersInfo', this._usersInfo,  JSON.stringify(this._usersInfo, null, '\t'))
 		// notify event
 		if( newUser && data.sourceId !== this._sourceId){
 			this.dispatchEvent('userJoin', data);			
@@ -53,10 +41,9 @@ console.log('post usersInfo', this._usersInfo,  JSON.stringify(this._usersInfo, 
 		
 		this.dispatchEvent('userInfo', data.sourceId, data.userInfo, oldUserInfo);
 	}.bind(this));
-
 	// listen on userLeft
 	socket.on('userLeft', function(data){
-		console.log('received userLeft ', JSON.stringify(data, null, '\t'));
+		//console.log('received userLeft ', JSON.stringify(data, null, '\t'));
 
 		var userInfo	= this._usersInfo[data.sourceId];
 		delete this._usersInfo[data.sourceId]

@@ -18,8 +18,8 @@
 		<pre id='usersList'></pre>
 	</div>
 <script>
-	var socket	= io.connect();
-	//var socket = io.connect('http://jetienne.tquery-multiplayerserver.jit.su:80/');
+	var serverUrl	= 'ws://127.0.0.1:4000#bla';
+	var socket	= io.connect(serverUrl);
 
 	//////////////////////////////////////////////////////////////////////////
 	//		userInfo						//
